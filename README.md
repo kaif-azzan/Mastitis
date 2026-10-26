@@ -2,9 +2,40 @@
 
 Local-only React and Python application for displaying a user-selected Android overhead camera, generating registered cow QR codes, recognizing them on the PC, and coordinating Thermal Master X3 captures across verified Android phones.
 
+## First-time setup (Windows)
+
+The current PowerShell launch scripts expect the project at `D:\ThermalMaster-X3-Automation`. Clone it there, or update the `$project` / `$frontend` paths in `scripts\run_app.ps1` and `scripts\run_frontend_dev.ps1` if you use another location.
+
+```powershell
+git clone https://github.com/kaif-azzan/Mastitis.git D:\ThermalMaster-X3-Automation
+Set-Location D:\ThermalMaster-X3-Automation
+```
+
+Install Python 3.13 and Node.js (including npm), then from the project root install the backend and frontend dependencies:
+
+```powershell
+py -3.13 -m venv .\app\backend\.venv
+& .\app\backend\.venv\Scripts\python.exe -m pip install -r .\app\backend\requirements.txt
+Push-Location .\app\frontend
+npm ci
+Pop-Location
+```
+
+### Overhead-camera phone setup
+
+The top-camera Android app is source code in `app\top-camera-android`; the APK is not committed. To build it, install JDK 17, Android SDK Platform 34, and Gradle 9.1. Configure `ANDROID_HOME` (or Android Studio's SDK path) and make sure `gradle` is available in PowerShell, then run:
+
+```powershell
+Push-Location .\app\top-camera-android
+gradle assembleDebug
+Pop-Location
+```
+
+The build creates `app\top-camera-android\app\build\outputs\apk\debug\app-debug.apk`, which is the path the backend expects. Install Android SDK Platform-Tools and place `adb.exe` and its companion DLLs in `tools\platform-tools` (or update `ADB_PATH` in `app\backend\main.py`). Connect the phone using Android Wireless debugging. When you choose `Check overhead camera` in Setup, the backend installs the APK if needed, creates the ADB reverse tunnel, and launches the sender app. Approve Android's camera permission prompt if shown.
+
 ## Start
 
-Run PowerShell:
+After installing dependencies and building the overhead-camera APK if needed, run each command in a separate PowerShell window from the project root:
 
 ```powershell
 & '.\scripts\run_app.ps1'
